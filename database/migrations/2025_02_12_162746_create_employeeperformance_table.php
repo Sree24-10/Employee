@@ -7,13 +7,13 @@ return new class extends Migration {
     public function up()
     {
         Schema::create('employeeperformance', function (Blueprint $table) {
-            $table->id(); // Auto-increment primary key
-            $table->unsignedBigInteger('empid'); // Foreign key for employee
-            $table->date('date'); // Performance evaluation date
-            $table->enum('performance', ['Excellent', 'Good', 'Average', 'Poor']); // Enum field
+            $table->id(); 
+            $table->unsignedBigInteger('empid'); 
+            $table->date('date');
+            $table->enum('performance', ['Excellent', 'Good', 'Average', 'Poor']); 
             $table->timestamps();
 
-            // Foreign key constraint
+            
             $table->foreign('empid')->references('id')->on('employee')->onDelete('cascade');
         });
     }
