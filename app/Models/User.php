@@ -2,47 +2,57 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany; // ✅ Import this!
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
         'name',
         'email',
         'password',
+        'is_admin',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_admin' => 'boolean', // ✅ Ensure is_admin is treated as boolean
         ];
+    }
+
+    // 🔹 Check if user is an Admin
+    public function isSuperAdmin()
+    {
+        return $this->is_admin == 1;
+    }
+
+    // 🔹 Relationship with Employee Performance
+    public function performance()
+    {
+        return $this->hasMany(EmployeePerformance::class, 'user_id');
+    }
+
+    // 🔹 Get Managers assigned to an Employee
+    public function managers(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'employee_manager', 'employee_id', 'manager_id');
+    }
+
+    // 🔹 Get Employees assigned to a Manager
+    public function employees(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'employee_manager', 'manager_id', 'employee_id');
     }
 }

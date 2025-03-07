@@ -6,20 +6,20 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    
+   
     public function up(): void
     {
-        Schema::create('employee', function (Blueprint $table) {
+        Schema::create('employee_manager', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
+            $table->foreignId('employee_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('manager_id')->constrained('users')->onDelete('cascade');
             $table->timestamps();
         });
     }
 
-   
+    
     public function down(): void
     {
-        Schema::dropIfExists('employee');
+        Schema::dropIfExists('employee_manager');
     }
 };
