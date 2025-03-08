@@ -8,6 +8,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\EmployeeManagerController;
 use App\Http\Controllers\UserDashboardController;
+use App\Http\Controllers\RatingController;
 
 // Homepage
 Route::get('/', function () {
@@ -43,3 +44,6 @@ Route::delete('/admin/users/{id}', [UserController::class, 'destroy'])->name('us
 // Assign Manager Routes
 Route::get('/assign-manager/{employee_id}', [EmployeeManagerController::class, 'showAssignForm'])->name('assign.manager.form');
 Route::post('/assign-manager', [EmployeeManagerController::class, 'storeAssignment'])->name('store.manager');
+
+Route::post('/rate-employee', [RatingController::class, 'store'])->name('rate.employee');
+Route::get('/dashboard', [UserDashboardController::class, 'dashboard'])->name('dashboard');

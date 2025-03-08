@@ -20,9 +20,9 @@
 
     <!-- Main Container -->
     <div class="flex justify-center mt-10">
-        <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-2xl">
-            
-            <!-- Managers Section (Visible to all users) -->
+        <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-3xl">
+
+            <!-- Managers Section -->
             <div class="mb-6">
                 <h3 class="text-lg font-semibold text-gray-800">Your Managers</h3>
                 <div class="bg-gray-50 p-4 rounded-md shadow-sm mt-2">
@@ -40,18 +40,105 @@
                 </div>
             </div>
 
-            <!-- Employees Section (Only visible to managers) -->
+            <!-- Employee Ratings (For Employees to View Ratings Given by Their Managers) -->
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold text-gray-800">Your Ratings</h3>
+                <div class="bg-gray-50 p-4 rounded-md shadow-sm mt-2">
+                    @if ($ratings->isEmpty())
+                        <p class="text-gray-500">No ratings available.</p>
+                    @else
+                        <table class="w-full border-collapse">
+                            <thead>
+                                <tr class="bg-gray-200">
+                                    <th class="p-2 text-left">Date</th>
+                                    <th class="p-2 text-left">Manager</th>
+                                    <th class="p-2 text-left">Rating</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($ratings as $rating)
+                                    <tr class="border-b">
+                                        <td class="p-2">{{ $rating->date }}</td>
+                                        <td class="p-2">{{ $rating->manager->name }}</td>
+                                        <td class="p-2 font-semibold">
+                                            @if ($rating->rating == 'Good')
+                                                <span class="text-green-600">Good</span>
+                                            @elseif ($rating->rating == 'Satisfactory')
+                                                <span class="text-yellow-600">Satisfactory</span>
+                                            @else
+                                                <span class="text-red-600">Poor</span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    @endif
+                </div>
+            </div>
+
+            <!-- Employees Section (For Managers to Rate Employees) -->
             @if (!$employees->isEmpty())  
                 <div class="mb-6">
-                    <h3 class="text-lg font-semibold text-gray-800">Your Employees</h3>
+                    <h3 class="text-lg font-semibold text-gray-800">Rate Your Employees ({{ \Carbon\Carbon::now()->format('F Y') }})</h3>
                     <div class="bg-gray-50 p-4 rounded-md shadow-sm mt-2">
-                        <ul class="text-gray-700 space-y-1">
-                            @foreach ($employees as $employee)
-                                <li class="flex items-center gap-2">
-                                    <span class="w-2 h-2 bg-green-500 rounded-full"></span> {{ $employee->name }}
-                                </li>
-                            @endforeach
-                        </ul>
+                        <form action="{{ route('rate.employee') }}" method="POST">
+                            @csrf
+                            <table class="w-full border-collapse">
+                                <thead>
+                                    <tr class="bg-gray-200">
+                                        <th class="p-2 text-left">Employee</th>
+                                        <th class="p-2 text-left">Date</th>
+                                        <th class="p-2 text-left">Rating</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($employees as $employee)
+                                        @php
+                                            // Get the latest rating for the current month
+                                            $previousRating = $ratings->where('employee_id', $employee->id)
+                                                                     ->where('manager_id', auth()->id())
+                                                                     ->whereBetween('date', [\Carbon\Carbon::now()->startOfMonth(), \Carbon\Carbon::now()->endOfMonth()])
+                                                                     ->sortByDesc('date')
+                                                                     ->first();
+                                            
+                                            // Default to today's date if no rating for this month
+                                            $ratingDate = $previousRating ? $previousRating->date : now()->format('Y-m-d');
+                                        @endphp
+
+                                        <tr class="border-b">
+                                            <td class="p-2">{{ $employee->name }}</td>
+                                            <td class="p-2">
+                                                <input type="date" name="ratings[{{ $employee->id }}][date]" class="border rounded-md p-1"
+                                                    value="{{ $ratingDate }}">
+                                            </td>
+                                            <td class="p-2">
+                                                <div class="flex gap-4">
+                                                    <label class="flex items-center">
+                                                        <input type="radio" name="ratings[{{ $employee->id }}][rating]" value="Poor" 
+                                                            {{ $previousRating && $previousRating->rating == 'Poor' ? 'checked' : '' }} required> 
+                                                        <span class="ml-1">Poor</span>
+                                                    </label>
+                                                    <label class="flex items-center">
+                                                        <input type="radio" name="ratings[{{ $employee->id }}][rating]" value="Good"
+                                                            {{ $previousRating && $previousRating->rating == 'Good' ? 'checked' : '' }}> 
+                                                        <span class="ml-1">Good</span>
+                                                    </label>
+                                                    <label class="flex items-center">
+                                                        <input type="radio" name="ratings[{{ $employee->id }}][rating]" value="Satisfactory"
+                                                            {{ $previousRating && $previousRating->rating == 'Satisfactory' ? 'checked' : '' }}> 
+                                                        <span class="ml-1">Satisfactory</span>
+                                                    </label>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                            <button type="submit" class="mt-4 bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600">
+                                Save Ratings
+                            </button>
+                        </form>
                     </div>
                 </div>
             @endif

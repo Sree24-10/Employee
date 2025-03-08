@@ -55,4 +55,9 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(User::class, 'employee_manager', 'manager_id', 'employee_id');
     }
+    public function ratings()
+    {
+        return $this->hasMany(Rating::class, 'employee_id');
+    }
+
 }
