@@ -42,10 +42,10 @@
 
             <!-- Employee Ratings (For Employees to View Ratings Given by Their Managers) -->
             <div class="mb-6">
-                <h3 class="text-lg font-semibold text-gray-800">Your Ratings</h3>
+                <h3 class="text-lg font-semibold text-gray-800">Your Ratings (Today's Ratings)</h3>
                 <div class="bg-gray-50 p-4 rounded-md shadow-sm mt-2">
-                    @if ($ratings->isEmpty())
-                        <p class="text-gray-500">No ratings available.</p>
+                    @if ($todaysRatings->isEmpty())
+                        <p class="text-gray-500">No ratings available for today.</p>
                     @else
                         <table class="w-full border-collapse">
                             <thead>
@@ -56,7 +56,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach ($ratings as $rating)
+                                @foreach ($todaysRatings as $rating)
                                     <tr class="border-b">
                                         <td class="p-2">{{ $rating->date }}</td>
                                         <td class="p-2">{{ $rating->manager->name }}</td>
@@ -74,6 +74,13 @@
                             </tbody>
                         </table>
                     @endif
+                </div>
+
+                <!-- View Past Ratings Button -->
+                <div class="mt-4">
+                    <a href="{{route('past.ratings') }}" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">
+                        View Past Ratings
+                    </a>
                 </div>
             </div>
 
@@ -96,11 +103,10 @@
                                     @foreach ($employees as $employee)
                                         @php
                                             // Get the latest rating for the current month
-                                            $previousRating = $ratings->where('employee_id', $employee->id)
-                                                                     ->where('manager_id', auth()->id())
-                                                                     ->whereBetween('date', [\Carbon\Carbon::now()->startOfMonth(), \Carbon\Carbon::now()->endOfMonth()])
-                                                                     ->sortByDesc('date')
-                                                                     ->first();
+                                            $previousRating = $todaysRatings->where('employee_id', $employee->id)
+                                                                            ->where('manager_id', auth()->id())
+                                                                            ->sortByDesc('date')
+                                                                            ->first();
                                             
                                             // Default to today's date if no rating for this month
                                             $ratingDate = $previousRating ? $previousRating->date : now()->format('Y-m-d');
@@ -135,9 +141,20 @@
                                     @endforeach
                                 </tbody>
                             </table>
-                            <button type="submit" class="mt-4 bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600">
-                                Save Ratings
-                            </button>
+                            <div class="mt-4 flex justify-between">
+    <!-- Save Ratings Button (Left) -->
+    <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600">
+        Save Ratings
+    </button>
+
+    <!-- View Given Ratings Button (Right) -->
+    <a href="{{ route('ratings.given') }}" 
+       class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 text-center inline-block">
+        View Given Ratings
+    </a>
+</div>
+
+                            
                         </form>
                     </div>
                 </div>

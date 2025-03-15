@@ -3,86 +3,111 @@
 <head>
     <title>Admin Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: #f8f9fa;
+            font-family: 'Poppins', sans-serif;
+        }
+        .navbar {
+            background: #1f2937; /* Dark Grayish */
+            color: white;
+            padding: 15px 20px;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        .btn {
+            transition: 0.3s;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        table {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        tbody tr:nth-child(odd) {
+            background: #f2f2f2;
+        }
+    </style>
 </head>
-<body class="bg-gray-100">
-    <!-- Navbar -->
-    <nav class="bg-gray-800 text-white p-4 flex justify-between items-center">
-        <h1 class="text-2xl font-bold">Admin Dashboard</h1>
-        <div>
-        <form action="{{ route('logout') }}" method="POST" class="inline">
-    @csrf
-    <button type="submit" class="px-4 py-2 bg-red-500 rounded-lg hover:bg-red-600">Logout</button>
-</form>
+<body>
 
-        </div>
+    <!-- Navbar -->
+    <nav class="navbar flex justify-between items-center shadow-md">
+        <h1 class="text-2xl font-semibold">Admin Dashboard</h1>
+        <form action="{{ route('logout') }}" method="POST">
+            @csrf
+            <button type="submit" class="btn px-5 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 shadow-sm">
+                Logout
+            </button>
+        </form>
     </nav>
 
-    <div class="p-6">
-        <!-- Add User Button -->
-        <div class="flex justify-between mb-4">
+    <div class="p-8">
+        <!-- Buttons Section -->
+        <div class="flex justify-between items-center mb-6">
             <h2 class="text-xl font-semibold text-gray-700">User Management</h2>
-            <a href="{{ route('users.create') }}" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">Add User</a>
+            <div>
+                <a href="{{ route('users.create') }}" class="btn px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 shadow-md">
+                    Add User
+                </a>
+                <a href="{{ route('employee.summary') }}" class="btn px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 ml-3 shadow-md">
+                    View Employee Summary
+                </a>
+            </div>
         </div>
 
         <!-- User Table -->
-        <div class="overflow-x-auto">
-            <table class="min-w-full bg-white border border-gray-200 rounded-lg shadow-md">
-                <thead class="bg-gray-800 text-white">
+        <div class="card">
+            <table class="w-full text-gray-700">
+                <thead class="bg-gray-200">
                     <tr>
-                        <th class="py-2 px-4 border">ID</th>
-                        <th class="py-2 px-4 border">Name</th>
-                        <th class="py-2 px-4 border">Email</th>
-                        <th class="py-2 px-4 border">Role</th>
-                        <th class="py-2 px-4 border">Actions</th>
+                        <th class="py-3 px-6 text-left">ID</th>
+                        <th class="py-3 px-6 text-left">Name</th>
+                        <th class="py-3 px-6 text-left">Email</th>
+                        <th class="py-3 px-6 text-left">Role</th>
+                        <th class="py-3 px-6 text-left">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-    @foreach ($users as $user)
-        <tr class="text-gray-700">
-            <td class="py-2 px-4 border">{{ $user->id }}</td>
-            <td class="py-2 px-4 border">{{ $user->name }}</td>
-            <td class="py-2 px-4 border">{{ $user->email }}</td>
-            <td class="py-2 px-4 border">
-                @if($user->is_admin)
-                    <span class="text-red-500 font-bold">Admin</span>
-                @else
-                    User
-                @endif
-            </td>
-            <td class="py-2 px-4 border">
-                <!-- Display Assigned Managers -->
-                @if(!$user->is_admin)
-                    <div class="mb-2">
-                        <span class="font-semibold">Managers:</span>
-                        @if ($user->managers->isEmpty())
-                            <span class="text-gray-500">None</span>
-                        @else
-                            @foreach ($user->managers as $manager)
-                                <span class="text-green-600">{{ $manager->name }}</span>{{ !$loop->last ? ', ' : '' }}
-                            @endforeach
-                        @endif
-                    </div>
-
-                    <!-- Assign Manager Button -->
-                    <a href="{{ route('assign.manager.form', $user->id) }}" 
-                       class="px-3 py-1 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600">
-                        Assign Manager
-                    </a>
-                @endif
-
-                <!-- Delete User Form -->
-                <form action="{{ route('users.destroy', $user->id) }}" method="POST" class="inline">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600">Delete</button>
-                </form>
-            </td>
-        </tr>
-    @endforeach
-</tbody>
-
+                    @foreach ($users as $user)
+                        <tr class="border-b border-gray-300">
+                            <td class="py-3 px-6">{{ $user->id }}</td>
+                            <td class="py-3 px-6 font-medium">{{ $user->name }}</td>
+                            <td class="py-3 px-6">{{ $user->email }}</td>
+                            <td class="py-3 px-6">
+                                @if($user->is_admin)
+                                    <span class="px-3 py-1 text-xs font-medium text-white bg-red-500 rounded-md shadow-md">Admin</span>
+                                @else
+                                    <span class="px-3 py-1 text-xs font-medium bg-gray-300 rounded-md shadow-md">User</span>
+                                @endif
+                            </td>
+                            <td class="py-3 px-6 flex space-x-2">
+                                @if(!$user->is_admin)
+                                    <a href="{{ route('assign.manager.form', $user->id) }}" 
+                                       class="btn px-3 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 shadow-sm">
+                                        Assign Manager
+                                    </a>
+                                @endif
+                                <form action="{{ route('users.destroy', $user->id) }}" method="POST">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn px-3 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 shadow-sm">
+                                        Delete
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
             </table>
         </div>
     </div>
+
 </body>
 </html>

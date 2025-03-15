@@ -10,9 +10,10 @@ use Carbon\Carbon;
 
 class UserDashboardController extends Controller
 {
-    public function dashboard()
+    public function index()
     {
         $user = auth()->user();
+        $today = Carbon::today()->toDateString();
 
         // Fetch managers assigned to the employee
         $managers = $user->managers;
@@ -20,13 +21,30 @@ class UserDashboardController extends Controller
         // Fetch employees if the user is a manager
         $employees = $user->employees;
 
-        // Fetch ratings given to the authenticated employee
-        $ratings = Rating::where('employee_id', $user->id)
-            ->with('manager') // Ensure a relationship exists in the Rating model
+        // Fetch only today's ratings given to the employee
+        $todaysRatings = Rating::where('employee_id', $user->id)
+            ->whereDate('date', $today)
+            ->with('manager')
             ->orderBy('date', 'desc')
             ->get();
 
-        return view('dashboard', compact('managers', 'employees', 'ratings'));
+        return view('dashboard', compact('managers', 'employees', 'todaysRatings'));
+    }
+
+    public function viewPastRatings()
+    {
+        $user = auth()->user();
+        $today = Carbon::today()->toDateString();
+
+        // Fetch all ratings **except today's**
+        $pastRatings = Rating::where('employee_id', $user->id)
+            ->whereDate('date', '<', $today)
+            ->with('manager')
+            ->orderBy('date', 'desc')
+            ->get();
+
+            return view('ratings.history', ['ratings' => $pastRatings]);
+
     }
 
     public function storeRatings(Request $request)
