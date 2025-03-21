@@ -5,9 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany; // ✅ Import this!
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Tymon\JWTAuth\Contracts\JWTSubject; // ✅ Import JWTSubject
 
-class User extends Authenticatable
+class User extends Authenticatable implements JWTSubject // ✅ Implement JWTSubject
 {
     use HasFactory, Notifiable;
 
@@ -28,8 +29,19 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            'is_admin' => 'boolean', // ✅ Ensure is_admin is treated as boolean
+            'is_admin' => 'boolean',
         ];
+    }
+
+    // ✅ Implement JWT Methods
+    public function getJWTIdentifier()
+    {
+        return $this->getKey();
+    }
+
+    public function getJWTCustomClaims()
+    {
+        return [];
     }
 
     // 🔹 Check if user is an Admin
@@ -55,9 +67,9 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(User::class, 'employee_manager', 'manager_id', 'employee_id');
     }
+
     public function ratings()
     {
         return $this->hasMany(Rating::class, 'employee_id');
     }
-
 }
